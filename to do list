@@ -1,0 +1,127 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+from tkinter import simpledialog
+
+class ToDoListApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Colorful To-Do List App")
+
+        self.tasks = []
+        self.task_entry = ttk.Entry(self.master, width=30, font=('Arial', 12), style="Colorful.TEntry")
+        self.task_entry.grid(row=0, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+
+        add_button = ttk.Button(self.master, text="Add Task", command=self.add_task, style="Colorful.TButton")
+        add_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+
+        view_button = ttk.Button(self.master, text="View Tasks", command=self.view_tasks, style="Colorful.TButton")
+        view_button.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
+
+        edit_button = ttk.Button(self.master, text="Edit Task", command=self.edit_task, style="Colorful.TButton")
+        edit_button.grid(row=1, column=2, padx=10, pady=10, sticky="ew")
+
+        remove_button = ttk.Button(self.master, text="Remove Task", command=self.remove_task, style="Colorful.TButton")
+        remove_button.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
+
+        done_button = ttk.Button(self.master, text="Mark as Done", command=self.mark_as_done, style="Done.TButton")
+        done_button.grid(row=2, column=1, padx=10, pady=10, sticky="ew")
+
+        pending_button = ttk.Button(self.master, text="Mark as Pending", command=self.mark_as_pending, style="Pending.TButton")
+        pending_button.grid(row=2, column=2, padx=10, pady=10, sticky="ew")
+
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+
+        # Set background color for the entire window
+        self.master.configure(bg="#F2F2F2")
+
+        # Define custom styles with colorful backgrounds
+        colorful_colors = ["#FF0000", "#FF8C00", "#FFD700", "#32CD32", "#0000FF", "#8A2BE2", "#FF1493"]
+
+        for i, color in enumerate(colorful_colors):
+            self.style.configure(f"Colorful{i}.TButton", background=color, foreground="white")
+            self.style.map(f"Colorful{i}.TButton",
+                           background=[("active", color)],
+                           foreground=[("active", "white")])
+
+        self.style.configure("Done.TButton", background="#008000", foreground="white")  # Dark Green
+        self.style.map("Done.TButton",
+                       background=[("active", "#00FF00")],  # Lime Green
+                       foreground=[("active", "black")])
+
+        self.style.configure("Pending.TButton", background="#FF4500", foreground="white")  # Orange-Red
+        self.style.map("Pending.TButton",
+                       background=[("active", "#FFA500")],  # Orange
+                       foreground=[("active", "black")])
+
+        self.style.configure("Colorful.TEntry", background="#D3D3D3", foreground="black")  # Light Grey
+        self.style.map("Colorful.TEntry",
+                       background=[("active", "#A9A9A9")],  # Dark Grey
+                       foreground=[("active", "black")])
+
+    def add_task(self):
+        task = self.task_entry.get()
+        if task:
+            self.tasks.append({"task": task, "status": "Pending"})
+            messagebox.showinfo("Task Added", f'Task "{task}" added.')
+            self.task_entry.delete(0, tk.END)
+        else:
+            messagebox.showwarning("Empty Task", "Please enter a task.")
+
+    def view_tasks(self):
+        if self.tasks:
+            tasks_text = "\n".join([f"{index + 1}. {task['task']} ({task['status']})" for index, task in enumerate(self.tasks)])
+            messagebox.showinfo("Tasks", tasks_text)
+        else:
+            messagebox.showinfo("No Tasks", "No tasks in the list.")
+
+    def edit_task(self):
+        if self.tasks:
+            index = simpledialog.askinteger("Edit Task", "Enter the task index to edit:", parent=self.master)
+            if index is not None:
+                if 1 <= index <= len(self.tasks):
+                    new_task = simpledialog.askstring("Edit Task", "Enter the new task:", parent=self.master)
+                    if new_task:
+                        self.tasks[index - 1]["task"] = new_task
+                        messagebox.showinfo("Task Edited", f'Task {index} edited.')
+                    else:
+                        messagebox.showwarning("Empty Task", "Please enter a new task.")
+                else:
+                    messagebox.showwarning("Invalid Index", "Invalid task index.")
+        else:
+            messagebox.showinfo("No Tasks", "No tasks in the list.")
+
+    def remove_task(self):
+        if self.tasks:
+            index = simpledialog.askinteger("Remove Task", "Enter the task index to remove:", parent=self.master)
+            if index is not None:
+                if 1 <= index <= len(self.tasks):
+                    removed_task = self.tasks.pop(index - 1)
+                    messagebox.showinfo("Task Removed", f'Task {index} removed: {removed_task["task"]}')
+                else:
+                    messagebox.showwarning("Invalid Index", "Invalid task index.")
+        else:
+            messagebox.showinfo("No Tasks", "No tasks in the list.")
+
+    def mark_as_done(self):
+        self.mark_task_status("Done")
+
+    def mark_as_pending(self):
+        self.mark_task_status("Pending")
+
+    def mark_task_status(self, status):
+        if self.tasks:
+            index = simpledialog.askinteger(f"Mark as {status}", "Enter the task index:", parent=self.master)
+            if index is not None:
+                if 1 <= index <= len(self.tasks):
+                    self.tasks[index - 1]["status"] = status
+                    messagebox.showinfo(f"Task Marked as {status}", f'Task {index} marked as {status}.')
+                else:
+                    messagebox.showwarning("Invalid Index", "Invalid task index.")
+        else:
+            messagebox.showinfo("No Tasks", "No tasks in the list.")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ToDoListApp(root)
+    root.mainloop()
